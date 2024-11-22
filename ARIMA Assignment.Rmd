@@ -1,0 +1,48 @@
+---
+title: "ARIMA assignment"
+author: "Alfazkhan"
+date: "2024-11-21"
+output: html_document
+---
+
+```{r}
+library(readxl)
+library(tidyr)
+library(dplyr)
+library(forecast)
+
+# Load the dataset
+data_path <- "C:/Users/Alfaz Khan/OneDrive/Desktop/RUTGERS/Business Forecasting/Week 3/Job Openings and Labor Turnover Survey.xlsx"
+data <- read_excel(data_path)
+
+# Reshape data directly into a time series
+job_openings_values <- as.numeric(unlist(data[,-1]))  # Flatten the numeric columns (months)
+start_year <- data$Year[1]  # First year in the dataset
+job_openings_ts <- ts(job_openings_values, start = c(start_year, 1), frequency = 12)
+
+# Determine the order of differencing required
+d <- ndiffs(job_openings_ts)
+cat("Number of differences required to make the series stationary:", d, "\n")
+
+# Differenced series (if needed)
+if (d > 0) {
+  job_openings_diff <- diff(job_openings_ts, differences = d)
+  plot(job_openings_diff, main = "Differenced Time Series", ylab = "Differenced Values", xlab = "Time")
+} else {
+  plot(job_openings_ts, main = "Original Time Series", ylab = "Job Openings", xlab = "Time")
+}
+
+# Fit ARIMA model
+fit_arima <- auto.arima(job_openings_ts)
+summary(fit_arima)
+
+# Residual analysis
+checkresiduals(fit_arima)
+
+# Forecast next 5 periods
+forecasted <- forecast(fit_arima, h = 5)
+plot(forecasted, main = "Forecast for Job Openings")
+
+# Accuracy metrics
+accuracy(forecasted)
+```
