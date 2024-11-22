@@ -1,0 +1,41 @@
+---
+title: "ARIMA assignment"
+author: "Alfazkhan"
+date: "2024-11-21"
+output: html_document
+---
+
+```{r}
+library(readxl)
+library(tidyr)
+library(dplyr)
+library(forecast)
+
+# Load the dataset
+data_path <- "C:/Users/Alfaz Khan/OneDrive/Desktop/RUTGERS/Business Forecasting/Week 3/Job Openings and Labor Turnover Survey.xlsx"
+data <- read_excel(data_path)
+
+job_openings_values <- as.numeric(unlist(data[,-1]))
+job_openings_ts <- ts(job_openings_values, start = c(2015, 1), frequency = 12)
+
+# Determine the order of differencing required
+d <- ndiffs(job_openings_ts)
+cat("Number of differences required to make the series stationary:", d, "\n")
+
+# Fit ARIMA model
+fit_arima <- auto.arima(job_openings_ts)
+summary(fit_arima)
+
+# Residual analysis
+checkresiduals(fit_arima)
+# The residuals look fairly random, which is good. This means the ARIMA model has captured most of the patterns in the data.
+
+# Forecast next 5 periods
+forecasted <- forecast(fit_arima, h = 5)
+plot(forecasted, main = "Forecast for Job Openings")
+# The forecast shows the predicted job openings for the next 5 months, with a confidence interval.
+# The model predicts a consistent trend, but the wide confidence intervals suggest some uncertainty in the predictions.
+
+# Accuracy metrics
+accuracy_metrics <- accuracy(forecasted)
+print(accuracy_metrics)
